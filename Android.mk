@@ -52,7 +52,9 @@ LOCAL_SHARED_LIBRARIES := \
 LOCAL_STATIC_LIBRARIES := libdrmhwc_utils
 
 LOCAL_C_INCLUDES := \
-	system/core/libsync
+	external/drm_gralloc \
+	system/core/libsync \
+	include/android
 
 LOCAL_SRC_FILES := \
 	autolock.cpp \
@@ -70,7 +72,6 @@ LOCAL_SRC_FILES := \
 	drmproperty.cpp \
 	hwcutils.cpp \
 	platform.cpp \
-	platformdrmgeneric.cpp \
 	vsyncworker.cpp
 
 LOCAL_CFLAGS := $(common_drm_hwcomposer_cflags)
@@ -79,8 +80,10 @@ LOCAL_CPPFLAGS += \
 	-DHWC2_USE_CPP11 \
 	-DHWC2_INCLUDE_STRINGIFICATION
 
-
-ifeq ($(TARGET_PRODUCT),hikey960)
+ifeq ($(TARGET_PRODUCT),xenvm)
+LOCAL_CPPFLAGS += -DUSE_IMG_IMPORTER
+LOCAL_SRC_FILES += platformimg.cpp 
+else ifeq ($(TARGET_PRODUCT),hikey960)
 LOCAL_CPPFLAGS += -DUSE_HISI_IMPORTER
 LOCAL_SRC_FILES += platformhisi.cpp
 LOCAL_C_INCLUDES += device/linaro/hikey/gralloc960/
@@ -95,7 +98,8 @@ else
 LOCAL_CPPFLAGS += -DUSE_DRM_GENERIC_IMPORTER
 endif
 
-LOCAL_MODULE := hwcomposer.drm
+
+LOCAL_MODULE := hwcomposer.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES

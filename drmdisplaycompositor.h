@@ -39,6 +39,13 @@
 // consumption.
 #define FLATTEN_COUNTDOWN_INIT 60
 
+#define DRM_MODE_REFLECT_X      (1<<4)
+#define DRM_MODE_REFLECT_Y      (1<<5)
+#define DRM_MODE_ROTATE_0       (1<<0)
+#define DRM_MODE_ROTATE_90      (1<<1)
+#define DRM_MODE_ROTATE_180     (1<<2)
+#define DRM_MODE_ROTATE_270     (1<<3)
+
 namespace android {
 
 class DrmDisplayCompositor {
