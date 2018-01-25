@@ -56,6 +56,7 @@ LOCAL_STATIC_LIBRARIES := libdrmhwc_utils
 LOCAL_C_INCLUDES := \
 	system/core/libsync
 
+
 LOCAL_SRC_FILES := \
 	autolock.cpp \
 	resourcemanager.cpp \
@@ -85,7 +86,6 @@ ifneq ($(filter 2 3 4 5 6 7 8, $(DRM_HWC_ANDROID_MAJOR_VERSION)),)
 LOCAL_CPPFLAGS += -DHWC2_USE_OLD_GB_IMPORT
 endif
 
-
 ifeq ($(TARGET_PRODUCT),hikey960)
 LOCAL_CPPFLAGS += -DUSE_HISI_IMPORTER
 LOCAL_SRC_FILES += platformhisi.cpp
@@ -97,11 +97,16 @@ LOCAL_C_INCLUDES += device/linaro/hikey/gralloc/
 else ifeq ($(strip $(BOARD_DRM_HWCOMPOSER_BUFFER_IMPORTER)),minigbm)
 LOCAL_SRC_FILES += platformminigbm.cpp
 LOCAL_C_INCLUDES += external/minigbm/cros_gralloc/
+else ifeq ($(TARGET_PRODUCT),xenvm)
+LOCAL_CPPFLAGS += -DUSE_IMG_IMPORTER
+LOCAL_C_INCLUDES += external/libdrm/android/
+LOCAL_SRC_FILES += platformimg.cpp
 else
 LOCAL_CPPFLAGS += -DUSE_DRM_GENERIC_IMPORTER
 endif
 
-LOCAL_MODULE := hwcomposer.drm
+
+LOCAL_MODULE := hwcomposer.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
