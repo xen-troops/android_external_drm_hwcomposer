@@ -737,8 +737,16 @@ HWC2::Error DrmHwcTwo::HwcDisplay::ValidateDisplay(uint32_t *num_types,
 
   HWC2::Error ret;
 
-  for (std::pair<const hwc2_layer_t, DrmHwcTwo::HwcLayer> &l : layers_)
-    l.second.set_validated_type(HWC2::Composition::Invalid);
+  if (avail_planes > 1) {
+    for (std::pair<const hwc2_layer_t, DrmHwcTwo::HwcLayer> &l : layers_)
+      l.second.set_validated_type(HWC2::Composition::Invalid );
+  } else {
+      for (std::pair<const hwc2_layer_t, DrmHwcTwo::HwcLayer> &l : layers_) {
+        l.second.set_validated_type(HWC2::Composition::Client );
+        ++*num_types;
+      }
+      return HWC2::Error::HasChanges;
+  }
 
   ret = CreateComposition(true);
   if (ret != HWC2::Error::None)
