@@ -569,7 +569,6 @@ void DrmDisplayCompositor::ApplyFrame(
   active_composition_.swap(composition);
 
   flatten_countdown_ = FLATTEN_COUNTDOWN_INIT;
-  vsync_worker_.VSyncControl(!writeback);
 }
 
 int DrmDisplayCompositor::ApplyComposition(
