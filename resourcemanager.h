@@ -34,6 +34,9 @@ class ResourceManager {
   std::shared_ptr<Importer> GetImporter(int display);
   const gralloc_module_t *gralloc();
   DrmConnector *AvailableWritebackConnector(int display);
+  std::vector<std::unique_ptr<DrmDevice>> &getDrmDevices() {
+    return drms_;
+  }
 
  private:
   int AddDrmDevice(std::string path);
