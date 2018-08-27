@@ -14,6 +14,8 @@
 
 ifeq ($(strip $(BOARD_USES_DRM_HWCOMPOSER)),true)
 
+DRM_HWC_ANDROID_MAJOR_VERSION := $(word 1, $(subst ., , $(PLATFORM_VERSION)))
+
 LOCAL_PATH := $(call my-dir)
 
 common_drm_hwcomposer_cflags := \
@@ -96,6 +98,10 @@ LOCAL_SRC_FILES += platformminigbm.cpp
 LOCAL_C_INCLUDES += external/minigbm/cros_gralloc/
 else
 LOCAL_CPPFLAGS += -DUSE_DRM_GENERIC_IMPORTER
+endif
+
+ifneq ($(filter 2 3 4 5 6 7 8, $(DRM_HWC_ANDROID_MAJOR_VERSION)),)
+LOCAL_CPP_FLAGS += -DHWC2_USE_OLD_GB_IMPORT
 endif
 
 
