@@ -958,6 +958,7 @@ void DrmHwcTwo::DrmHotplugHandler::HandleEvent(uint64_t timestamp_us) {
     } else {
       auto &display = hwc2_->displays_.at(HWC_DISPLAY_EXTERNAL);
       display.ClearDisplay();
+      hwc2_->resource_manager_.GetImporter(HWC_DISPLAY_EXTERNAL)->FlushCache();
     }
 
     hwc2_->handleDisplayHotplug(HWC_DISPLAY_EXTERNAL, cur_state);

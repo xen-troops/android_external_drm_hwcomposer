@@ -29,6 +29,12 @@
 
 namespace android {
 
+typedef struct bo_descriptor {
+    hwc_drm_bo_t bo;
+    bool used;
+    bool needFlush;
+} bo_t;
+
 class ImgImporter : public Importer {
  public:
   ImgImporter(DrmDevice *drm);
@@ -39,6 +45,7 @@ class ImgImporter : public Importer {
   int ImportBuffer(buffer_handle_t handle, hwc_drm_bo_t *bo) override;
   int ReleaseBuffer(hwc_drm_bo_t *bo) override;
   int ReleaseImgBuffer(hwc_drm_bo_t* bo);
+  void FlushCache () override;
 
  private:
   uint32_t ConvertImgHalFormatToDrm(IMG_native_handle_t *img_hnd, hwc_drm_bo_t *bo);
@@ -46,7 +53,7 @@ class ImgImporter : public Importer {
 
   DrmDevice *drm_;
 
-  std::map<unsigned long long, hwc_drm_bo_t> cachedBo_;
+  std::map<unsigned long long, bo_t> cachedBo_;
   std::mutex cachedBoMutex_;
 };
 }

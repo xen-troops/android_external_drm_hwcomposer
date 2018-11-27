@@ -61,7 +61,7 @@ ImgImporter::ImgImporter(DrmDevice *drm) : drm_(drm) {
 ImgImporter::~ImgImporter() {
   std::lock_guard<std::mutex> lock(cachedBoMutex_);
   for (auto& pair : cachedBo_){
-    ReleaseImgBuffer(&pair.second);
+    ReleaseImgBuffer(&pair.second.bo);
   }
   cachedBo_.clear();
 }
@@ -164,11 +164,8 @@ int ImgImporter::ImportBuffer(buffer_handle_t ghandle, hwc_drm_bo_t *bo) {
       std::lock_guard<std::mutex> lock(cachedBoMutex_);
       auto it = cachedBo_.find(img_hnd->ui64Stamp);
       if(it != cachedBo_.end()) {
-          ALOGI("Using FB from cache(size %d)", (int)cachedBo_.size());
-          for (auto& cached : cachedBo_) {
-              ALOGI("----> %llu", cached.first);
-          }
-          *bo = it->second;
+          it->second.used = true;
+          *bo = it->second.bo;
           return 0;
       }
   }
@@ -189,13 +186,44 @@ int ImgImporter::ImportBuffer(buffer_handle_t ghandle, hwc_drm_bo_t *bo) {
 
   {
       std::lock_guard<std::mutex> lock(cachedBoMutex_);
-      cachedBo_.insert(std::make_pair(img_hnd->ui64Stamp, hwc_drm_bo_t(*bo)));
+
+      bo->priv = reinterpret_cast<void*>(img_hnd->ui64Stamp);
+      bo_t buffer;
+      buffer.bo = *bo;
+      buffer.needFlush = false;
+      buffer.used = true;
+
+      cachedBo_.insert(std::make_pair(img_hnd->ui64Stamp, buffer));
   }
 
   return ret;
 }
 
-int ImgImporter::ReleaseBuffer(hwc_drm_bo_t */*bo*/) {
+void ImgImporter::FlushCache ()
+{
+  std::lock_guard<std::mutex> lock(cachedBoMutex_);
+  ALOGI("ImgImporter cache(size %d)", (int)cachedBo_.size());
+  for (auto it = cachedBo_.begin(); it != cachedBo_.end();) {
+    it->second.needFlush = true;
+    if (!it->second.used) {
+      ReleaseImgBuffer(&it->second.bo);
+      it = cachedBo_.erase(it);
+    } else {
+        ++it;
+    }
+  }
+}
+
+int ImgImporter::ReleaseBuffer(hwc_drm_bo_t *bo) {
+  std::lock_guard<std::mutex> lock(cachedBoMutex_);
+  unsigned long long key = reinterpret_cast<unsigned long long>(bo->priv);
+  auto& buffer = cachedBo_[key];
+  buffer.used = false;
+  if (buffer.needFlush) {
+    ReleaseImgBuffer(&buffer.bo);
+    buffer.needFlush = false;
+    cachedBo_.erase(key);
+  }
   return 0;
 }
 
