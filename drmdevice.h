@@ -87,6 +87,7 @@ class DrmDevice {
 
   int CreateDisplayPipe(DrmConnector *connector);
   int AttachWriteback(DrmConnector *display_conn);
+  void UpdateConnectorWithDisplayId(std::unique_ptr<DrmConnector>& conn, int& num_displays) ;
 
   UniqueFd fd_;
   uint32_t mode_id_ = 0;

@@ -23,6 +23,7 @@
 #include "drmeventlistener.h"
 #include "drmplane.h"
 
+#include <cutils/properties.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
@@ -40,6 +41,12 @@ DrmDevice::DrmDevice() : event_listener_(this) {
 
 DrmDevice::~DrmDevice() {
   event_listener_.Exit();
+}
+
+void DrmDevice::UpdateConnectorWithDisplayId(std::unique_ptr<DrmConnector>& conn, int& num_displays) {
+  conn->set_display(num_displays);
+  displays_[num_displays] = num_displays;
+  ++num_displays;
 }
 
 std::tuple<int, int> DrmDevice::Init(const char *path, int num_displays) {
@@ -173,12 +180,32 @@ std::tuple<int, int> DrmDevice::Init(const char *path, int num_displays) {
       connectors_.emplace_back(std::move(conn));
   }
 
+  uint32_t primary_connector = property_get_int32("hwc.drm.connector.primary_id", 0);
+  uint32_t secondary_connector = property_get_int32("hwc.drm.connector.secondary_id", 0);
+
+  if (primary_connector) {
+    for (auto &conn : connectors_) {
+      if (conn->id() == primary_connector) {
+        UpdateConnectorWithDisplayId(conn, num_displays);
+        found_primary = true;
+        break;
+      }
+    }
+
+    if (found_primary && (connectors_.size() > 1) && (secondary_connector)) {
+      for (auto &conn : connectors_) {
+        if (conn->id() == secondary_connector) {
+          UpdateConnectorWithDisplayId(conn, num_displays);
+          break;
+        }
+      }
+    }
+  }
+
   // First look for primary amongst internal connectors
   for (auto &conn : connectors_) {
     if (conn->internal() && !found_primary) {
-      conn->set_display(num_displays);
-      displays_[num_displays] = num_displays;
-      ++num_displays;
+      UpdateConnectorWithDisplayId(conn, num_displays);
       found_primary = true;
       break;
     }
@@ -189,14 +216,10 @@ std::tuple<int, int> DrmDevice::Init(const char *path, int num_displays) {
   for (auto &conn : connectors_) {
     if (conn->external() || conn->internal()) {
       if (!found_primary) {
-        conn->set_display(num_displays);
-        displays_[num_displays] = num_displays;
+        UpdateConnectorWithDisplayId(conn, num_displays);
         found_primary = true;
-        ++num_displays;
       } else if (conn->display() < 0) {
-        conn->set_display(num_displays);
-        displays_[num_displays] = num_displays;
-        ++num_displays;
+        UpdateConnectorWithDisplayId(conn, num_displays);
       }
     }
   }
