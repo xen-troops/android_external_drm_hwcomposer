@@ -26,7 +26,7 @@
 
 #include <cutils/native_handle.h>
 #include <system/graphics.h>
-#include <linux/ion.h>
+#include <ion/ion.h>
 
 #define ALIGN(x,a)	((((x) + (a) - 1L) / (a)) * (a))
 #define HW_ALIGN	64

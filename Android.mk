@@ -54,7 +54,9 @@ LOCAL_SHARED_LIBRARIES := \
 LOCAL_STATIC_LIBRARIES := libdrmhwc_utils
 
 LOCAL_C_INCLUDES := \
-	system/core/libsync
+	system/core/libsync \
+	system/core/libion/include \
+	system/core/libion/kernel-headers \
 
 
 LOCAL_SRC_FILES := \
