@@ -118,7 +118,7 @@ typedef struct
 	(sizeof(unsigned long long) / sizeof(int) + \
 	 7 + MAX_SUB_ALLOCS + MAX_SUB_ALLOCS + \
 	 sizeof(unsigned long long) / sizeof(int) * MAX_SUB_ALLOCS + \
-	 1)
+	 2)
 	/* A KERNEL unique identifier for any exported kernel memdesc. Each
 	 * exported kernel memdesc will have a unique stamp, but note that in
 	 * userspace, several memdescs across multiple processes could have
@@ -175,6 +175,8 @@ typedef struct
 	 * texture arrays shared between processes. The multiple layers are
 	 * contained in one memory allocation. */
 	int iLayers;
+	/* This records reserved bits for implementation-specific usage flags */
+	int iPrivUsage;
 }
 __attribute__((aligned(sizeof(int)),packed)) IMG_native_handle_t;
 
